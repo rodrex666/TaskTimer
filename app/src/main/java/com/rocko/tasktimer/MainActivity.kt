@@ -79,6 +79,11 @@ class MainActivity : AppCompatActivity(),AddEditFragment.OnSaveClicked {
         when (item.itemId) {
             R.id.menumain_addTask-> taskEditRequest(null)
 //            R.id.menumain_settings -> true
+            android.R.id.home-> {
+                Log.d(TAG,"onOptionsItemSelected: home button pressed")
+                val fragment = supportFragmentManager.findFragmentById(R.id.task_details_container)
+                removeEditPane(fragment)
+            }
 
         }
         return  super.onOptionsItemSelected(item)
@@ -90,5 +95,15 @@ class MainActivity : AppCompatActivity(),AddEditFragment.OnSaveClicked {
         supportFragmentManager.beginTransaction().replace(R.id.task_details_container,newFragment).commit()
         showEditPane()
         Log.d(TAG,"Exiting taskEditRequest")
+    }
+
+    override fun onBackPressed() {
+        val fragment=supportFragmentManager.findFragmentById(R.id.task_details_container)
+        if(fragment==null||mTwoPane)
+        {
+        super.onBackPressed()}
+        else{
+            removeEditPane(fragment)
+        }
     }
 }

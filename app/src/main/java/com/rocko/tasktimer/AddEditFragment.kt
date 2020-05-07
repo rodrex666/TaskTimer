@@ -1,6 +1,8 @@
 package com.rocko.tasktimer
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ContentValues
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -42,14 +44,72 @@ class AddEditFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_add_edit, container, false)
     }
 
+    @SuppressLint("SetTextI18n")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+//        super.onViewCreated(view, savedInstanceState)
+        Log.d(TAG,"onViewCreated: called")
+        if(savedInstanceState==null){
+            val task=task
+            if (task!=null){
+                Log.d(TAG,"onViewCreated: Task details found, editing task ${task.id}")
+                addedit_name.setText(task.name)
+                addedit_description.setText(task.description)
+                addedit_sortorder.setText(Integer.toString(task.sortOrder))
+
+            }else{
+                //No task, add new task and NOT edit a existing one
+                Log.d(TAG,"onViewCreated: No arguments, adding new record")
+            }
+        }
+    }
+    private fun saveTask(){
+        //Update database if one field has changed, otherwise dont need to hit db
+        val sortOrder=if((addedit_sortorder.text.isNotEmpty())){
+            Integer.parseInt(addedit_sortorder.text.toString())
+        }else{
+            0
+        }
+        val values = ContentValues()
+        val task=task
+        if(task!=null)
+        {
+            Log.d(TAG,"saveTask: updating existing task")
+            if(addedit_name.text.toString()!=task.name)
+            {
+                values.put(TasksContract.Columns.TASK_NAME,addedit_name.text.toString())
+            }
+            if(addedit_description.text.toString()!=task.description){
+                values.put(TasksContract.Columns.TASK_DESCRIPTION,addedit_description.text.toString())
+            }
+            if(sortOrder!=task.sortOrder){
+                values.put(TasksContract.Columns.TASK_SORT_ORDER,sortOrder)
+            }
+            if (values.size()!=0){
+                Log.d(TAG,"saveTask: Updating task")
+                activity?.contentResolver?.update(TasksContract.buildUriFromId(task.id),values,null,null)
+            }
+        }else{
+            Log.d(TAG,"saveTask: adding new task")
+            if(addedit_name.text.isNotEmpty()){
+                values.put(TasksContract.Columns.TASK_NAME,addedit_name.text.toString())
+                if (addedit_description.text.isNotEmpty()){
+                    values.put(TasksContract.Columns.TASK_DESCRIPTION,addedit_description.text.toString())
+                }
+                values.put(TasksContract.Columns.TASK_SORT_ORDER,sortOrder) //defaults to zero if empty
+                activity?.contentResolver?.insert(TasksContract.CONTENT_URI,values)
+            }
+        }
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         Log.d(TAG,"onActivityCreated: starts")
         super.onActivityCreated(savedInstanceState)
-
-        val actionBar=(listener as AppCompatActivity?)?.supportActionBar
-        actionBar?.setDisplayHomeAsUpEnabled(true)
-
+        if(listener is AppCompatActivity) {
+            val actionBar = (listener as AppCompatActivity?)?.supportActionBar
+            actionBar?.setDisplayHomeAsUpEnabled(true)
+        }
        addedit_save.setOnClickListener {
+           saveTask()
            listener?.onSaveClicked()
        }
     }
@@ -60,7 +120,7 @@ class AddEditFragment : Fragment() {
         if(context is OnSaveClicked){
             listener=context
         }else{
-            throw RuntimeException(context.toString()+" must implement OnSaveClicked")
+            throw RuntimeException("$context must implement OnSaveClicked")
         }
     }
 
@@ -99,9 +159,6 @@ class AddEditFragment : Fragment() {
         super.onPause()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-    }
 
     override fun onStart() {
         super.onStart()

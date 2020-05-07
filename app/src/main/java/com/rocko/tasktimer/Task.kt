@@ -5,5 +5,6 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 class Task (val name:String,val description:String,val sortOrder:Int):Parcelable{
-//    var id:Long
+    var id:Long=0
+    //video 257
 }
