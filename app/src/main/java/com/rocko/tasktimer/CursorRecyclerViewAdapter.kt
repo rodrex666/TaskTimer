@@ -1,5 +1,6 @@
 package com.rocko.tasktimer
 
+import android.annotation.SuppressLint
 import android.database.Cursor
 import android.util.Log
 import android.view.LayoutInflater
@@ -21,12 +22,13 @@ class CursorRecyclerViewAdapter(private var cursor:Cursor?):RecyclerView.Adapter
         val view=LayoutInflater.from(parent.context).inflate(R.layout.task_list_items,parent,false)
         return TaskViewHolder(view)
     }
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         Log.d(TAG,"onBindViewHolder: starts")
         val cursor=cursor // no problem with smart cast
         if(cursor==null||cursor.count==0){
-            Log.d(TAG,"onBindViewHolder: providing instructions")
-            holder.containerView.tit_name.text = "Insructions"
+            Log.d(TAG, "onBindViewHolder: providing instructions")
+            holder.containerView.tit_name.text = "Instructions"
             holder.containerView.tli_description.text = "meta meta meta"
             holder.containerView.til_edit.visibility=View.GONE
             holder.containerView.til_delete.visibility=View.GONE
@@ -53,7 +55,9 @@ class CursorRecyclerViewAdapter(private var cursor:Cursor?):RecyclerView.Adapter
     }
 
     override fun getItemCount(): Int {
-        TODO("Not yet implemented")
+        Log.d(TAG,"getItemCount: starts")
+        return 0
+
     }
 
 
